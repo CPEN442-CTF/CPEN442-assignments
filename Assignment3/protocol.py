@@ -87,7 +87,7 @@ class Protocol:
 
 
 
-        self._DHExponent = randint(999, 9999) # generate a random exponent b for g^b mod p
+        self._DHExponent = randint(999, 16384) # generate a random exponent b for g^b mod p
         msg["DiffieHellman"] = ( pow(self._g , self._DHExponent) % self._p ) #generate the DH part key
         # msg["DiffieHellman"] = [] # TODO: @Brendon add DH part key here
 
@@ -148,7 +148,7 @@ class Protocol:
 
             resp["EncryptedTS"] = ts_bytes # TODO: @Sanjeev encrypt with bootstap key
 
-            self._DHExponent = randint(999, 9999) # generate a random exponent b for g^b mod p
+            self._DHExponent = randint(999, 16384) # generate a random exponent b for g^b mod p
             resp["DiffieHellman"] = ( pow(self._g , self._DHExponent) % self._p ) #generate the DH part key
 
             # resp["DiffieHellman"] = [] # TODO: @Brendon add DH part key here
