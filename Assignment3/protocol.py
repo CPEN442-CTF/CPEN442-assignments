@@ -126,7 +126,6 @@ class Protocol:
         TSSeconds = float(TSBytes.decode())
         TSAge = datetime.today().timestamp() - TSSeconds
         print("age", TSAge)
-        # TODO: @Joshua compare timestamps and throw exception if TS is old
         if TSAge > 1000:
             raise Exception("timeout")
 
