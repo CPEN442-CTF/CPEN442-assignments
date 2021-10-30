@@ -118,7 +118,10 @@ class Protocol:
         TSBytes = msg["EncryptedTS"]
         TSSeconds = float(TSBytes.decode())
         TSAge = datetime.today().timestamp() - TSSeconds
+        print("age", TSAge)
         # TODO: @Joshua compare timestamps and throw exception if TS is old
+        if TSAge > 1000:
+            raise Exception("timeout")
 
         if self._MWait == None:
             # We are responding to an initation
