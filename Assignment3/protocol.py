@@ -131,12 +131,12 @@ class Protocol:
 
             self._DHExponent = randint(999, 16384) # generate a random exponent b for g^b mod p
             resp["DiffieHellman"] = ( pow(self._g , self._DHExponent) % self._p ) #generate the DH part key
-            self.SetSessionKey(msg["DiffieHellman"])
+            self.SetSessionKey(msg["DiffieHellman"], secret)
 
             return self._InitVal + self.EncryptAndProtectProtocol(json.dumps(resp).encode())
         else:
             # We are processing a response
-            self.SetSessionKey(msg["DiffieHellman"]) # For now put 1, still waiting for the decryption implmentation, so i can get the DH part key from the received message.
+            self.SetSessionKey(msg["DiffieHellman"], secret) # For now put 1, still waiting for the decryption implmentation, so i can get the DH part key from the received message.
 
         # self._DHExponent = None
         # self._MWait = None
@@ -145,12 +145,13 @@ class Protocol:
         self.resetProtocolVariables
         return None
 
-    def SetSessionKey(self, OtherPublicDH):
+    def SetSessionKey(self, OtherPublicDH, secret):
         """
         Setting the key for the current session
         
         Parameters:
         OtherPublicDH: g^a mod p from the other party for diffie hellman
+        secret: shared secret
 
         Raises:
         Exception: if self._DHExponent == None
@@ -161,8 +162,11 @@ class Protocol:
         if  self._DHExponent == None: 
                 raise Exception("The DH Exponent is not set yet.")
 
-        sessionkey = ((pow( OtherPublicDH, self._DHExponent)) % self._p) 
-        hash_object = SHA3_256.new(data=bytes(str(sessionkey), "utf-8"))
+        DHSecret = ((pow( OtherPublicDH, self._DHExponent)) % self._p) 
+
+        hash_object = SHA3_256.new(data=bytes(str(DHSecret), "utf-8"))
+        secret_bytes = str.encode(secret)
+        hash_object.update(secret_bytes)
         self._SessionKey = hash_object.digest()
     
     def resetProtocolVariables():
