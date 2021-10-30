@@ -160,7 +160,6 @@ class Assignment3VPN:
                     if resp != None:
                         self.conn.send(resp)
                     self._AppendLog("Connection secured")
-
                 # Otherwise, decrypting and showing the messaage
                 else:
                     plain_text = self.prtcl.DecryptAndVerifyMessage(cipher_text)

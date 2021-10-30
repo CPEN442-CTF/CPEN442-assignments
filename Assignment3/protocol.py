@@ -138,8 +138,11 @@ class Protocol:
             # We are processing a response
             self.SetSessionKey(msg["DiffieHellman"]) # For now put 1, still waiting for the decryption implmentation, so i can get the DH part key from the received message.
 
-        self._DHExponent = None
-        self._MWait = None
+        # self._DHExponent = None
+        # self._MWait = None
+        # return None
+        # Forget the protocol variables
+        self.resetProtocolVariables
         return None
 
     def SetSessionKey(self, OtherPublicDH):
@@ -161,6 +164,16 @@ class Protocol:
         sessionkey = ((pow( OtherPublicDH, self._DHExponent)) % self._p) 
         hash_object = SHA3_256.new(data=bytes(str(sessionkey), "utf-8"))
         self._SessionKey = hash_object.digest()
+    
+    def resetProtocolVariables():
+        """
+        Resets the protocol variables
+        """
+        self._AuthNonce = None
+        self._DHExponent = None
+        self._BootstrapKey = None
+        self._MWait = None
+        
 
     def EncryptAndProtectMessage(self, plain_text):
         """
@@ -168,11 +181,11 @@ class Protocol:
         RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
         """
         if(self._SessionKey == None):
-            return plain_text
+            cipher_text = plain_text
+            return cipher_text.encode()
         cipher = AES.new(self._SessionKey, AES.MODE_EAX)
         nonce = cipher.nonce
-        cipher_text, tag = cipher.encrypt_and_digest(
-            plain_text.encode('ascii'))
+        cipher_text, tag = cipher.encrypt_and_digest(plain_text.encode('ascii'))
         return json.dumps((nonce.hex(), cipher_text.hex(), tag.hex())).encode()
 
     def DecryptAndVerifyMessage(self, cipher_text):
