@@ -88,9 +88,16 @@ class Protocol:
 
     def IsMessagePartOfProtocol(self, message):
         """Checking if a received message is part of your protocol (called from app.py)"""
-        if self._BootstrapKey == None or self._SessionKey == None:
-            return True
-        return False
+        try:
+            x = pickle.loads(message)
+            if(len(x) == 4):
+                return True
+            return False
+        except Exception as e:
+            return False
+        # if self._BootstrapKey == None or self._SessionKey == None:
+        #     return True
+        # return False
 
     def ProcessReceivedProtocolMessage(self, message, secret):
         """
@@ -139,8 +146,11 @@ class Protocol:
             # We are processing a response
             self.SetSessionKey(msg["DiffieHellman"]) # For now put 1, still waiting for the decryption implmentation, so i can get the DH part key from the received message.
 
-        self._DHExponent = None
-        self._MWait = None
+        # self._DHExponent = None
+        # self._MWait = None
+        # return None
+        # Forget the protocol variables
+        self.resetProtocolVariables
         return None
 
     def SetSessionKey(self, OtherPublicDH):
@@ -166,6 +176,16 @@ class Protocol:
         # self._BootstrapKey = None # no longer need this key
         # self._DHExponent = None  # need to forget this exponent
         #pass  #may delete later
+    
+    def resetProtocolVariables():
+        """
+        Resets the protocol variables
+        """
+        self._AuthNonce = None
+        self._DHExponent = None
+        self._BootstrapKey = None
+        self._MWait = None
+        
 
     def EncryptAndProtectMessage(self, plain_text):
         """
@@ -173,11 +193,11 @@ class Protocol:
         RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
         """
         if(self._SessionKey == None):
-            return plain_text
+            cipher_text = plain_text
+            return cipher_text.encode()
         cipher = AES.new(self._SessionKey, AES.MODE_EAX)
         nonce = cipher.nonce
-        cipher_text, tag = cipher.encrypt_and_digest(
-            plain_text.encode('ascii'))
+        cipher_text, tag = cipher.encrypt_and_digest(plain_text.encode('ascii'))
         return pickle.dumps((nonce, cipher_text, tag))
 
     def DecryptAndVerifyMessage(self, cipher_text):
@@ -186,7 +206,8 @@ class Protocol:
         RETURN AN ERROR MESSAGE IF INTEGRITY VERITIFCATION OR AUTHENTICATION FAILS
         """
         if(self._SessionKey == None):
-            return cipher_text
+            plain_text = cipher_text
+            return plain_text.decode()
         nonce, cipher_text, tag = pickle.loads(cipher_text)
         cipher = AES.new(self._SessionKey, AES.MODE_EAX, nonce=nonce)
         plain_text = cipher.decrypt_and_verify(cipher_text, tag)
